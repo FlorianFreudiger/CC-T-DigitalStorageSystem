@@ -16,6 +16,9 @@ cc_expect.expect(1, listening_channel, "number")
 local common_functions = require(".storage.common_functions")
 local Controller = require("controller")
 
+-- To please the lua diagnostics
+os.pullEvent = os.pullEvent or printError("os.pullEvent missing")
+
 -- Returns array of inventories of peripheral type
 function find_inventories(types)
     local result = {}
