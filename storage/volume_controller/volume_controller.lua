@@ -19,8 +19,7 @@ os.pullEvent = os.pullEvent or printError("os.pullEvent missing")
 os.loadAPI = os.loadAPI or printError("os.loadAPI missing")
 
 -- Import common function api
-common_functions_loaded = os.loadAPI("/storage/common_functions.lua")
-if not common_functions_loaded then printError("Common functions library not found, please add") end
+local common_functions = require(".storage.common_functions")
 
 -- Returns array of inventories of peripheral type
 function find_inventories(types)

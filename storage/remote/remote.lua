@@ -6,8 +6,7 @@ local modem_side = "back"
 -- End of Config
 
 -- Import common function api
-common_functions_loaded = os.loadAPI("/storage/common_functions.lua")
-if not common_functions_loaded then printError("Common functions library not found, please add") end
+local common_functions = require(".storage.common_functions")
 
 local items = {}
 local item_panels = {}

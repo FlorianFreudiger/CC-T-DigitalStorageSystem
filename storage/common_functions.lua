@@ -1,6 +1,8 @@
+local common_functions = {}
+
 -- https://stackoverflow.com/a/2705804
 -- Thank you https://stackoverflow.com/users/137317/u0b34a0f6ae
-function tablelength(T)
+function common_functions.tablelength(T)
     local count = 0
     for _ in pairs(T) do count = count + 1 end
     return count
@@ -12,7 +14,7 @@ end
 -- for k,v in spairs(Table, function(t,a,b) return t[b] < t[a] end) do
 --    print(k,v)
 -- end
-function spairs(t, order)
+function common_functions.spairs(t, order)
     -- collect the keys
     local keys = {}
     for k in pairs(t) do keys[#keys + 1] = k end
@@ -33,9 +35,9 @@ function spairs(t, order)
     end
 end
 
-function is_table_empty(t) return next(t) == nil end
+function common_functions.is_table_empty(t) return next(t) == nil end
 
-function pretty_item_name(item_name)
+function common_functions.pretty_item_name(item_name)
     -- Find colon
     local colon_index = string.find(item_name, ":")
     if colon_index == nil then
@@ -46,3 +48,5 @@ function pretty_item_name(item_name)
     local item_name_spaces = item_name_without_group:gsub("%_", " ")
     return item_name_spaces:gsub("^%l", string.upper)
 end
+
+return common_functions
