@@ -20,7 +20,7 @@ local Controller = require("controller")
 os.pullEvent = os.pullEvent or printError("os.pullEvent missing")
 
 -- Returns array of inventories of peripheral type
-function find_inventories(types)
+local function find_inventories(types)
     local result = {}
     for _, type in pairs(types) do
         local found_invs = table.pack(peripheral.find(type))
@@ -29,14 +29,6 @@ function find_inventories(types)
         end
     end
     return result
-end
-
--- Returns slots that contain item_name
-function get_slots_of_item_in_inventory(item_name, inv)
-    local slots = {}
-    local items_in_inv = inv.list()
-    for slot, item in pairs(items_in_inv) do if item["name"] == item_name then table.insert(slots, slot) end end
-    return slots
 end
 
 -- Find modems
@@ -49,31 +41,31 @@ else
 end
 
 ---- NETWORKING STUFF ----
-function receive_string_ping(modem, reply_channel)
+local function receive_string_ping(modem, reply_channel)
     modem.transmit(reply_channel, listening_channel, "PONG")
     print("Replied to ping")
 end
-function receive_string_clear_io()
+local function receive_string_clear_io()
     -- TODO: Confirmation
     -- modem.transmit(listening_channel, channel, "CLEARED IO")
     print("Clearing io")
     Controller:io_clear()
 end
-function receive_string_items(modem, reply_channel)
+local function receive_string_items(modem, reply_channel)
     local items = Controller:export_item_table()
     modem.transmit(reply_channel, listening_channel, items)
     print("Sent items")
 end
-networking_actions_string = {["PING"] = receive_string_ping, ["CLEAR IO"] = receive_string_clear_io, ["ITEMS"] = receive_string_items}
+local networking_actions_string = {["PING"] = receive_string_ping, ["CLEAR IO"] = receive_string_clear_io, ["ITEMS"] = receive_string_items}
 
-function receive_table_pull_item(_, _, message)
+local function receive_table_pull_item(_, _, message)
     local io_inv = peripheral.wrap(message.io_inv_name)
     local item_name = message.item_name
     local amount = message.amount
     print("Pulling", amount, item_name, "into", message.io_inv_name)
     Controller:io_pull_item(io_inv, item_name, amount)
 end
-networking_actions_table = {["PULL ITEM"] = receive_table_pull_item}
+local networking_actions_table = {["PULL ITEM"] = receive_table_pull_item}
 
 print("Searching for inventories..")
 Controller.storage_inventories = find_inventories(storage_types)

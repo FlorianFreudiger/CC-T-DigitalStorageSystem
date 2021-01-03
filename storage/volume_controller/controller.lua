@@ -35,6 +35,14 @@ function Controller:io_clear()
     end
 end
 
+-- Returns slots that contain item_name
+local function inventory_get_slots_of_item(item_name, inv)
+    local slots = {}
+    local items_in_inv = inv.list()
+    for slot, item in pairs(items_in_inv) do if item["name"] == item_name then table.insert(slots, slot) end end
+    return slots
+end
+
 function Controller:io_pull_item(io_inv, item_name, amount)
     local item = self.items[item_name]
     if item == nil then
@@ -49,7 +57,7 @@ function Controller:io_pull_item(io_inv, item_name, amount)
     -- Pull item from inventories with low item count first to decrease internal fragmentation
     for storage_inv_name, _ in common_functions.spairs(item.occurences, function(t, a, b) return t[b].count > t[a].count end) do
         local storage_inv = peripheral.wrap(storage_inv_name)
-        local slots = get_slots_of_item_in_inventory(item_name, storage_inv)
+        local slots = inventory_get_slots_of_item(item_name, storage_inv)
 
         local transfer_count_occurence = 0
         for _, slot in pairs(slots) do -- We could sort this like the chests, but wouldn't make such a big difference
