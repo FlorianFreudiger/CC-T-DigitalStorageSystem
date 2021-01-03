@@ -16,8 +16,16 @@ cobalt.ui = dofile("cobalt-ui/init.lua")
 
 local Panel = cobalt.ui.new({w = "100%", h = "100%", backColour = colors.green})
 
-local Input = Panel:add("input",
-                        {w = "100%", y = 1, backPassiveColour = colors.green, backActiveColour = colors.orange, placeholder = "Itemname"})
+local Input = Panel:add("input", {
+    w = "70%",
+    y = 1,
+    backPassiveColour = colors.green,
+    backActiveColour = colors.orange,
+    placeholder = "Search item",
+    wrap = "left"
+})
+local RefreshButton = Panel:add("button",
+                                {w = "25%", y = 1, h = 1, text = "Refresh", wrap = "right", marginleft = "75%", foreColour = colors.black})
 
 local InfoText = Panel:add("text", {text = "Info-Text", wrap = "center", margintop = "50%", backColour = colors.red})
 
@@ -103,6 +111,11 @@ function update_panels()
         end
         item_panels[item_name] = panel_and_text
     end
+end
+
+RefreshButton.onclick = function()
+    update_items()
+    update_panels()
 end
 
 print("Fetching initial items, if you see this the storage controller hasn't responded yet, it's probably offline.")
