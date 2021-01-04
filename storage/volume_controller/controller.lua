@@ -18,11 +18,13 @@ function Controller:populate_items()
     end
 end
 
-function Controller:io_push_item(io_inv, slot, amount)
+function Controller:io_push_item(io_inv, slot, amount, item_name)
     -- TODO Optimize by trying to push into invs that already have the same item first
     for _, storage_inv in pairs(self.storage_inventories) do
         local peripheral_name = peripheral.getName(storage_inv)
-        amount = amount - io_inv.pushItems(peripheral_name, slot, amount)
+        local pushed_item_count = io_inv.pushItems(peripheral_name, slot, amount)
+        amount = amount - pushed_item_count
+        self.items[item_name]:add_occurence(storage_inv, pushed_item_count)
         if amount <= 0 then break end
     end
     if amount > 0 then printError("Couldn't move item from io into storage, is storage full?") end
@@ -31,7 +33,7 @@ end
 function Controller:io_clear()
     for _, io_inv in pairs(self.io_inventories) do
         local items_in_io_inv = io_inv.list()
-        for slot, item in pairs(items_in_io_inv) do self:io_push_item(io_inv, slot, item["count"]) end
+        for slot, item in pairs(items_in_io_inv) do self:io_push_item(io_inv, slot, item["count"], item["name"]) end
     end
 end
 
