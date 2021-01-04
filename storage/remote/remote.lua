@@ -9,7 +9,7 @@ local modem_side = "back"
 local common_functions = require(".storage.common_functions")
 
 local items = {}
-local item_panels = {}
+local item_menu_entries = {}
 
 local cobalt = dofile("cobalt")
 cobalt.ui = dofile("cobalt-ui/init.lua")
@@ -68,10 +68,33 @@ function search_items(search_term)
     return matching_item_names
 end
 
-function new_item_panel(item_name)
+local ItemMenuEntry = {}
+function ItemMenuEntry:new(item_name)
     local NewPanel = Panel:add("panel", {w = "100%", h = 1})
     local NewText = NewPanel:add("text", {text = common_functions.pretty_item_name(item_name), w = "100%"})
-    return {NewPanel, NewText}
+
+    local new_entry = {panel = NewPanel, text = NewText}
+    setmetatable(new_entry, self)
+    self.__index = self
+    return new_entry
+end
+
+function ItemMenuEntry:show(y) self.panel.y = y end
+
+function ItemMenuEntry:hide() self.panel.y = -1000 end
+
+function ItemMenuEntry:set_color_index(index)
+    local scheme = index % 2
+    -- You can add to or modify the entry color scheme here!
+    if scheme == 0 then
+        self.panel.backColour = colors.white
+        self.text.backColour = colors.white
+    elseif scheme == 1 then
+        self.panel.backColour = colors.lightGray
+        self.text.backColour = colors.lightGray
+    else
+        printError("Unknown color scheme")
+    end
 end
 
 function update_items()
@@ -88,28 +111,17 @@ function update_panels()
     local matching_item_names = search_items(Input.text:lower())
 
     -- Hide all panels
-    for _, panel_and_text in pairs(item_panels) do panel_and_text[1].y = -1000 end
+    for _, entry in pairs(item_menu_entries) do entry:hide() end
 
-    if common_functions.is_table_empty(matching_item_names) then
-        set_InfoText(true, "No items matching search.")
-        return
-    else
-        set_InfoText(false)
-    end
+    local no_match = common_functions.is_table_empty(matching_item_names)
+    set_InfoText(no_match, "No items matching search.")
+    if no_match then return end
 
     for index, item_name in pairs(matching_item_names) do
-        local panel_and_text = item_panels[item_name] or new_item_panel(item_name)
-        local panel = panel_and_text[1]
-        local text = panel_and_text[2]
-        panel.y = index + 1
-        if index % 2 == 1 then
-            panel.backColour = colors.lightGray
-            text.backColour = colors.lightGray
-        else
-            panel.backColour = colors.white
-            text.backColour = colors.white
-        end
-        item_panels[item_name] = panel_and_text
+        local entry = item_menu_entries[item_name] or ItemMenuEntry:new(item_name)
+        entry:show(index + 1)
+        entry:set_color_index(index)
+        item_menu_entries[item_name] = entry
     end
 end
 
