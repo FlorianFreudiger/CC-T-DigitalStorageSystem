@@ -20,12 +20,20 @@ local Input = Panel:add("input", {
     w = "70%",
     y = 1,
     backPassiveColour = colors.green,
-    backActiveColour = colors.orange,
+    backActiveColour = colors.lime,
     placeholder = "Search item",
     wrap = "left"
 })
-local RefreshButton = Panel:add("button",
-                                {w = "25%", y = 1, h = 1, text = "Refresh", wrap = "right", marginleft = "75%", foreColour = colors.black})
+local RefreshButton = Panel:add("button", {
+    w = "25%",
+    y = 1,
+    h = 1,
+    text = "Refresh",
+    wrap = "right",
+    marginleft = "75%",
+    foreColour = colors.black,
+    backColour = colors.purple
+})
 
 local InfoText = Panel:add("text", {text = "Info-Text", wrap = "center", margintop = "50%", backColour = colors.red})
 
@@ -69,11 +77,13 @@ function search_items(search_term)
 end
 
 local ItemMenuEntry = {}
-function ItemMenuEntry:new(item_name)
+function ItemMenuEntry:new(item_name, item_count)
+    item_count = math.min(item_count, 999)
     local NewPanel = Panel:add("panel", {w = "100%", h = 1})
-    local NewText = NewPanel:add("text", {text = common_functions.pretty_item_name(item_name), w = "100%"})
+    local TextCount = NewPanel:add("text", {text = string.format("%03d", item_count)})
+    local TextName = NewPanel:add("text", {text = common_functions.pretty_item_name(item_name), marginleft = 4})
 
-    local new_entry = {panel = NewPanel, text = NewText}
+    local new_entry = {panel = NewPanel, text_name = TextName, text_count = TextCount}
     setmetatable(new_entry, self)
     self.__index = self
     return new_entry
@@ -87,19 +97,32 @@ function ItemMenuEntry:set_color_index(index)
     local scheme = index % 2
     -- You can add to or modify the entry color scheme here!
     if scheme == 0 then
-        self.panel.backColour = colors.white
-        self.text.backColour = colors.white
+        self.panel.backColour = colors.lightBlue
+        self.text_name.backColour = colors.lightBlue
+        self.text_count.backColour = colors.cyan
     elseif scheme == 1 then
-        self.panel.backColour = colors.lightGray
-        self.text.backColour = colors.lightGray
+        self.panel.backColour = colors.yellow
+        self.text_name.backColour = colors.yellow
+        self.text_count.backColour = colors.orange
     else
         printError("Unknown color scheme")
     end
 end
 
+function ItemMenuEntry:update_count(item_count)
+    item_count = math.min(item_count, 999)
+    self.text_count.text = string.format("%03d", item_count)
+end
+
 function update_items()
     modem.transmit(storage_channel, listening_channel, "ITEMS")
     _, _, _, _, items = os.pullEvent("modem_message")
+
+    -- Update count for existing entries
+    for item_name, count in pairs(items) do
+        local entry = item_menu_entries[item_name]
+        if entry then entry:update_count(count) end
+    end
 end
 
 function update_panels()
@@ -118,7 +141,7 @@ function update_panels()
     if no_match then return end
 
     for index, item_name in pairs(matching_item_names) do
-        local entry = item_menu_entries[item_name] or ItemMenuEntry:new(item_name)
+        local entry = item_menu_entries[item_name] or ItemMenuEntry:new(item_name, items[item_name])
         entry:show(index + 1)
         entry:set_color_index(index)
         item_menu_entries[item_name] = entry
